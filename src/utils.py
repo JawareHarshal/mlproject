@@ -5,6 +5,7 @@ import dill
 import numpy as np
 import pandas as pd
 from sklearn.metrics import r2_score
+from sklearn.model_selection import GridSearchCV
 
 from src.exception import CustomException 
 
@@ -20,7 +21,7 @@ def save_object(file_path, obj):
     except Exception as e:
         raise CustomException(e, sys)
 
-def evaluate_models(X_train, y_train, X_test, y_test, models):
+def evaluate_models(X_train, y_train, X_test, y_test, models, param):
 
     try:
         report={}
@@ -30,6 +31,15 @@ def evaluate_models(X_train, y_train, X_test, y_test, models):
 
             # fetching individual values(models)
             model = list(models.values())[i]
+
+            # fetching the list of params
+            para=param[list(models.keys())[i]]
+
+            # cv = cross validation
+            gs = GridSearchCV(model, para, cv=3)
+            gs.fit(X_train, y_train)
+
+            model.set_params(**gs.best_params_)
 
             # fitting the model o X_train and y_train
             model.fit(X_train, y_train)     # Train model
